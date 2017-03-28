@@ -22,6 +22,7 @@ public class MainActivity extends AppCompatActivity {
     public CallbackManager callbackManager;
     public AccessToken accessToken;
 
+    CallbackManager callbackManager;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -36,6 +37,25 @@ public class MainActivity extends AppCompatActivity {
 
         callbackManager = CallbackManager.Factory.create();
 
+        loginButton.registerCallback(callbackManager, new FacebookCallback<LoginResult>() {
+            @Override
+            public void onSuccess(LoginResult loginResult) {
+                // App code
+                Log.d(TAG, "onSuccess: facebook success");
+            }
+
+            @Override
+            public void onCancel() {
+                // App code
+                Log.d(TAG, "onCancel: cancel success");
+            }
+
+            @Override
+            public void onError(FacebookException exception) {
+                // App code
+                Log.d(TAG, "onError: error success");
+            }
+        });
 
         LoginManager.getInstance().registerCallback(callbackManager,
                 new FacebookCallback<LoginResult>() {
