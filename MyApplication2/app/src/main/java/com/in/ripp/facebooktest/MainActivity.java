@@ -9,20 +9,26 @@ import com.facebook.AccessToken;
 import com.facebook.CallbackManager;
 import com.facebook.FacebookCallback;
 import com.facebook.FacebookException;
-import com.facebook.FacebookSdk;
 import com.facebook.GraphRequest;
 import com.facebook.GraphResponse;
 import com.facebook.HttpMethod;
 import com.facebook.login.LoginManager;
 import com.facebook.login.LoginResult;
 import com.facebook.login.widget.LoginButton;
+import com.google.gson.Gson;
+
+import org.json.JSONObject;
+
+import java.util.ArrayList;
+import java.util.HashMap;
 
 public class MainActivity extends AppCompatActivity {
     public static final String TAG = "Rip";
     public CallbackManager callbackManager;
     public AccessToken accessToken;
 
-    CallbackManager callbackManager;
+    ArrayList<String> taggableFriendsArray = new ArrayList<>();
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -31,31 +37,9 @@ public class MainActivity extends AppCompatActivity {
         final LoginButton loginButton = (LoginButton) findViewById(R.id.login_button);
         loginButton.setReadPermissions("email");
         loginButton.setReadPermissions("public_profile");
-        loginButton.setReadPermissions("user_friends");
-
-        FacebookSdk.sdkInitialize(this.getApplicationContext());
 
         callbackManager = CallbackManager.Factory.create();
 
-        loginButton.registerCallback(callbackManager, new FacebookCallback<LoginResult>() {
-            @Override
-            public void onSuccess(LoginResult loginResult) {
-                // App code
-                Log.d(TAG, "onSuccess: facebook success");
-            }
-
-            @Override
-            public void onCancel() {
-                // App code
-                Log.d(TAG, "onCancel: cancel success");
-            }
-
-            @Override
-            public void onError(FacebookException exception) {
-                // App code
-                Log.d(TAG, "onError: error success");
-            }
-        });
 
         LoginManager.getInstance().registerCallback(callbackManager,
                 new FacebookCallback<LoginResult>() {
@@ -64,18 +48,31 @@ public class MainActivity extends AppCompatActivity {
                         Log.d(TAG, "onSuccess: facebook success from login manager");
                         accessToken = loginResult.getAccessToken();
                         /* make the API call */
-                        new GraphRequest(
+                        GraphRequest newGraphRequest = new GraphRequest(
                                 AccessToken.getCurrentAccessToken(),
                                 "/me/taggable_friends",
                                 null,
                                 HttpMethod.GET,
                                 new GraphRequest.Callback() {
                                     public void onCompleted(GraphResponse response) {
-                                    /* handle the result */
-                                        Log.d(TAG, "onCompleted: " + response.toString());
+                                            if(response != null)
+                                            {
+                                                Gson gson = new Gson();
+                                                JSONObject jsonObject = response.getJSONObject();
+                                                String taggableFriendsJson = jsonObject.toString();
+
+                                                taggableFriendsArray = (ArrayList<String>) (gson.fromJson(taggableFriendsJson, new HashMap<String, String>().getClass()).get("data"));
+
+                                                Log.d(TAG, "onCompleted: you now have you're friends in a taggableFriends array :)");
+                                            }
                                     }
                                 }
-                        ).executeAsync();
+                            );
+                        Bundle parameters = new Bundle();
+                        parameters.putInt("limit", 5000);
+                        newGraphRequest.setParameters(parameters);
+                        newGraphRequest.executeAsync();
+
                     }
 
                     @Override
