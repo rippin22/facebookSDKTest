@@ -14,6 +14,7 @@ import com.facebook.login.widget.LoginButton;
 
 public class MainActivity extends AppCompatActivity {
     public static final String TAG = "Rip";
+    CallbackManager callbackManager;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -22,16 +23,9 @@ public class MainActivity extends AppCompatActivity {
         LoginButton loginButton = (LoginButton) findViewById(R.id.login_button);
         loginButton.setReadPermissions("email");
 
-//
-//        CallbackManager callbackManager = new CallbackManager() {
-//
-//            @Override
-//            public boolean onActivityResult(int requestCode, int resultCode, Intent data) {
-//                Log.d(TAG, "onActivityResult: "+requestCode+":"+resultCode+":"+ data.toString());
-//                return false;
-//            }
-//        };
-        // Callback registration
+        FacebookSdk.sdkInitialize(this.getApplicationContext());
+
+        callbackManager = CallbackManager.Factory.create();
 
         loginButton.registerCallback(callbackManager, new FacebookCallback<LoginResult>() {
             @Override
